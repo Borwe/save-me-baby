@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { dirIsGit, getParentDir } from './utils';
 
 export class Presnter {
     private _enabled: boolean = false
@@ -27,6 +28,11 @@ export class Presnter {
 		let disposable = vscode.commands.registerCommand('save-me-baby.start-saving', () => {
 			this._enabled=true;
 			vscode.workspace.onDidSaveTextDocument((doc)=>{
+				//get the parent dir of the file
+				const parent_dir = getParentDir(doc.uri)
+				if(dirIsGit(parent_dir)){
+					//if so then go and get last git log
+				}
 			})
 			vscode.window.showInformationMessage('Starting to Save You 😄!');
 			return true;
