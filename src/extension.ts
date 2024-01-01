@@ -8,17 +8,7 @@ import PRESENTER from './presenter';
 export function activate(context: vscode.ExtensionContext) {
 
 	console.log('Congratulations, your extension "save-me-baby" is now active!');
-
-	let disposable = vscode.commands.registerCommand('save-me-baby.start-saving', () => {
-		vscode.window.showInformationMessage('Starting to Save You 😄!');
-		PRESENTER.toggle()
-	});
-	context.subscriptions.push(disposable);
-	disposable = vscode.commands.registerCommand('save-me-baby.stop-saving', () => {
-		vscode.window.showInformationMessage('Stoping to Save Save you 😥!');
-		PRESENTER.toggle()
-	});
-	context.subscriptions.push(disposable);
+	PRESENTER.setupCommands(context)
 }
 
 // This method is called when your extension is deactivated
