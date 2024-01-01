@@ -7,8 +7,8 @@ import PRESENTER from './presenter';
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	console.log('Congratulations, your extension "save-me-baby" is now active!');
 	PRESENTER.setupCommands(context)
+	console.log('Congratulations, your extension "save-me-baby" is now active!');
 }
 
 // This method is called when your extension is deactivated

@@ -4,25 +4,37 @@ import * as assert from 'assert';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 import PRESENTER from '../presenter';
+import path from 'path';
 // import * as myExtension from '../../extension';
+
+async function writeToFile(content: string, file: vscode.Uri): Promise<boolean>{
+	vscode.workspace.fs.writeFile(file, Buffer.from(content));
+	console.log("File at: ",file);
+	return await vscode.workspace.saveAll()
+}
 
 suite('Test commands', () => {
 
-	test("start-saving exists", async () =>{
-		let exists = await vscode.commands
-			.executeCommand<boolean>("save-me-baby.start-saving")
-		assert.notStrictEqual(exists, undefined)
+	setup(async ()=>{
+		await vscode.extensions.getExtension("borwe.save-me-baby")!.activate()
 	})
 
-	test("stop-saving exists", async () =>{
-		let exists  = await vscode.commands
-			.executeCommand<boolean>("save-me-baby.stop-saving")
-		assert.notStrictEqual(exists, undefined)
-	})
+	test("turning start_saving on and see if it works", async ()=>{
+		let result = await vscode.commands.executeCommand("save-me-baby.start-saving")
+		assert.strictEqual(result, true)
 
-	test("toggle exists", async () =>{
-		let exists = await vscode.commands
-			.executeCommand<boolean>("save-me-baby.toggle")
-		assert.notStrictEqual(exists, undefined)
+		//get the current promise, it should be null
+		assert.strictEqual(PRESENTER.currentGitted, null, "Current getter should be null")
+
+		//emit an open command to open new file
+		const file = vscode.Uri.file(path.join(vscode.workspace.workspaceFolders![0].uri.path,"test_dir/test.txt"))
+		//write some text to it and save the current file
+		const wrote = await writeToFile("Hello", file);
+		assert.strictEqual(wrote, true);
+
+		//when here means there must be a new Promise in currentGitted 
+		//for saving the file and executing git cmd, check it
+		//exists
+		assert.notStrictEqual(PRESENTER.currentGitted, null, "Current getter should not be null")
 	})
 });

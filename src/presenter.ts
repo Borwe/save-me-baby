@@ -2,12 +2,22 @@ import * as vscode from 'vscode';
 
 export class Presnter {
     private _enabled: boolean = false
+	currentGitted: Promise<void> | null = null
+	private loaded = false;
 
     get enabled(): boolean { return this._enabled } 
     /** Toggle to enable or disable saving */
     toggle(){
         this._enabled = !this._enabled
     }
+
+	async waitTillCommandsSetup(){
+		while(!this.loaded){
+			await new Promise((resolve)=>{
+				setTimeout(()=>{},100)
+			})
+		}
+	}
 
     setupCommands(context: vscode.ExtensionContext){
 
@@ -30,6 +40,8 @@ export class Presnter {
 			return true;
 		});
 		context.subscriptions.push(disposable);
+
+		this.loaded = true;
     }
 }
 
