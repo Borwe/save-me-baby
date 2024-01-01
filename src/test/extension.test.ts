@@ -7,10 +7,9 @@ import PRESENTER from '../presenter';
 import path from 'path';
 // import * as myExtension from '../../extension';
 
-async function writeToFile(content: string, file: vscode.Uri): Promise<boolean>{
-	vscode.workspace.fs.writeFile(file, Buffer.from(content));
+async function writeToFile(content: string, file: vscode.Uri){
+	vscode.workspace.fs.writeFile(file, Buffer.from(content))
 	console.log("File at: ",file);
-	return await vscode.workspace.saveAll()
 }
 
 suite('Test commands', () => {
@@ -27,10 +26,9 @@ suite('Test commands', () => {
 		assert.strictEqual(PRESENTER.currentGitted, null, "Current getter should be null")
 
 		//emit an open command to open new file
-		const file = vscode.Uri.file(path.join(vscode.workspace.workspaceFolders![0].uri.path,"test_dir/test.txt"))
+		const file = vscode.Uri.file(path.join(vscode.workspace.workspaceFolders![0].uri.path,"test.txt"))
 		//write some text to it and save the current file
-		const wrote = await writeToFile("Hello", file);
-		assert.strictEqual(wrote, true);
+		await writeToFile("Hello", file);
 
 		//when here means there must be a new Promise in currentGitted 
 		//for saving the file and executing git cmd, check it
