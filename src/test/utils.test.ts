@@ -34,4 +34,10 @@ suite("Testing Utils",()=>{
         // git repo, lol.
         assert.strictEqual(result, false)
     })
+
+    test("Test getting last log message of a git directory", ()=>{
+        const projDir = vscode.Uri.file(path.join(process.cwd(), "../../"))
+        const msg = utils.dirGetLastLogMessage(projDir);
+
+    })
 })
