@@ -28,8 +28,18 @@ export function dirIsGit(uri: vscode.Uri): boolean {
 export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
     const cwd = process.cwd()
     process.chdir(uri.fsPath)
-    let result = String(execSync("git log --oneline")).split("\n")[0].trim()
+    let result  = ""
+    try{
+        const exec = execSync("git log --oneline")
+        result = String(exec).split("\n")[0].trim()
+    }catch(err: any){
+        result = String(err.stderr)
+        console.log("ERROR IS: ",result)
+    }
     process.chdir(cwd)
+    if(result.includes("fatal: your current branch")){
+        return undefined
+    }
     let lastLogMessagePos = result.indexOf(" ")
     let lastLogMessage = result.substring(lastLogMessagePos+1)
     return lastLogMessage;

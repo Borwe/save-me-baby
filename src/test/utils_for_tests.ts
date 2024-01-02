@@ -19,6 +19,6 @@ export function getOrCreateNoCommitDir(): vscode.Uri | undefined{
 
 export function deleteCreatedNoCommitDir(dir: vscode.Uri) {
     if(fs.existsSync(dir.fsPath)){
-        fs.rmdirSync(dir.fsPath, { recursive: true })
+        fs.rmSync(dir.fsPath, { recursive: true })
     }
 }

@@ -43,12 +43,14 @@ suite("Testing Utils",()=>{
         assert.notEqual(msg,undefined)
     })
 
-    test("Test creating and deleting no commit dir", ()=>{
+    test("Test creating no commit dir", ()=>{
         const noCommitDir = getOrCreateNoCommitDir()
         assert.notDeepEqual(noCommitDir, undefined)
-        deleteCreatedNoCommitDir(noCommitDir!)
-        const exists = fs.existsSync(noCommitDir!.fsPath)
-        assert.equal(exists, true)
+        test("Test deleting no commit dir", ()=>{
+            deleteCreatedNoCommitDir(noCommitDir!)
+            const exists = fs.existsSync(noCommitDir!.fsPath)
+            assert.equal(exists, false)
+        })
     })
 
     test("Test getting last log message of a git directory with no previous commit", ()=>{
