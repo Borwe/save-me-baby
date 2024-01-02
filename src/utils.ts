@@ -19,6 +19,18 @@ export function dirIsGit(uri: vscode.Uri): boolean {
         if(on>=0 && on < 3){
             return true;
         }
-    }catch(err){}
+    }catch(err){}finally{
+        process.chdir(currDir)
+    }
     return false
+}
+
+export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
+    const cwd = process.cwd()
+    process.chdir(uri.fsPath)
+    let result = String(execSync("git log --oneline")).split("\n")[0].trim()
+    process.chdir(cwd)
+    let lastLogMessagePos = result.indexOf(" ")
+    let lastLogMessage = result.substring(lastLogMessagePos+1)
+    return lastLogMessage;
 }

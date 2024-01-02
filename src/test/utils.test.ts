@@ -1,8 +1,10 @@
 import * as assert  from 'assert'
 import path from 'path'
 import * as vscode from 'vscode'
+import * as fs from 'fs'
 import * as utils from '../utils'
 import { homedir } from 'os'
+import { deleteCreatedNoCommitDir, getOrCreateNoCommitDir } from './utils_for_tests'
 
 suite("Testing Utils",()=>{
     test("Test getting parent dir", ()=>{
@@ -38,6 +40,21 @@ suite("Testing Utils",()=>{
     test("Test getting last log message of a git directory", ()=>{
         const projDir = vscode.Uri.file(path.join(process.cwd(), "../../"))
         const msg = utils.dirGetLastLogMessage(projDir);
+        assert.notEqual(msg,undefined)
+    })
 
+    test("Test creating and deleting no commit dir", ()=>{
+        const noCommitDir = getOrCreateNoCommitDir()
+        assert.notDeepEqual(noCommitDir, undefined)
+        deleteCreatedNoCommitDir(noCommitDir!)
+        const exists = fs.existsSync(noCommitDir!.fsPath)
+        assert.equal(exists, true)
+    })
+
+    test("Test getting last log message of a git directory with no previous commit", ()=>{
+        const noCommitDir = getOrCreateNoCommitDir()
+        const msg = utils.dirGetLastLogMessage(noCommitDir!)
+        deleteCreatedNoCommitDir(noCommitDir!)
+        assert.equal(msg, undefined)
     })
 })

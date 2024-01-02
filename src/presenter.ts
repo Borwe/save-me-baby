@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { dirIsGit, getParentDir } from './utils';
+import { dirGetLastLogMessage, dirIsGit, getParentDir } from './utils';
+import { log } from 'console';
 
 export class Presnter {
     private _enabled: boolean = false
@@ -24,6 +25,15 @@ export class Presnter {
 		}
 	}
 
+	gitCommit(logMsg: string | undefined){
+		//if logMsg is undefined, show a message telling user
+		// you going to use git message of "First commit"
+		//then go ahead and save
+		if(logMsg===undefined){
+			logMsg = "First Commit"
+		}
+	}
+
     setupCommands(context: vscode.ExtensionContext){
 
 		let disposable = vscode.commands.registerCommand('save-me-baby.start-saving', () => {
@@ -33,9 +43,11 @@ export class Presnter {
 				const parent_dir = getParentDir(doc.uri)
 				if(dirIsGit(parent_dir)){
 					//if so then go and get last git log
-					//:w
-					let lastLog = dirGetLastLogMessage()
+					let lastLog = dirGetLastLogMessage(parent_dir)
+					//create git commit
+					PRESENTER.gitCommit(lastLog)
 				}
+				//Letter have a setting to allow initializing repo incase no git
 			})
 			vscode.window.showInformationMessage('Starting to Save You 😄!');
 			return true;
