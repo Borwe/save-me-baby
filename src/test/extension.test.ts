@@ -15,7 +15,7 @@ async function writeToFile(content: string, file: vscode.Uri){
 
 suite('Test commands', () => {
 
-	let test_dir = path.join(process.cwd(),"../../test_dir")
+	let test_dir = path.join(__dirname,"../../test_dir")
 	suiteSetup(async ()=>{
 		try{
 			console.log("DIR CREATION", test_dir)

@@ -8,14 +8,14 @@ import { deleteCreatedNoCommitDir, getOrCreateNoCommitDir } from './utils_for_te
 
 suite("Testing Utils",()=>{
     test("Test getting parent dir", ()=>{
-        const expected = vscode.Uri.file(process.cwd())
-        const testingfile = vscode.Uri.file(path.join(process.cwd(), "testingfile.txt"))
+        const expected = vscode.Uri.file(__dirname)
+        const testingfile = vscode.Uri.file(path.join(__dirname, "testingfile.txt"))
         let parentDir = utils.getParentDir(testingfile);
         assert.strictEqual(parentDir.fsPath, expected.fsPath)
     })
 
     test("Test dir is Git true", ()=>{
-        const testingfile = vscode.Uri.file(path.join(process.cwd(), "testingfile.txt"))
+        const testingfile = vscode.Uri.file(path.join(__dirname, "testingfile.txt"))
         let parentDir = utils.getParentDir(testingfile);
         const result = utils.dirIsGit(parentDir)
         assert.strictEqual(result, true);
@@ -23,7 +23,7 @@ suite("Testing Utils",()=>{
 
 
     test("Test dir is Git false since imaginary", ()=>{
-        const testingfile = vscode.Uri.file(path.join(process.cwd(), "/hehehehhe/asdsadl/testingfile.txt"))
+        const testingfile = vscode.Uri.file(path.join(__dirname, "/hehehehhe/asdsadl/testingfile.txt"))
         let parentDir = utils.getParentDir(testingfile);
         const result = utils.dirIsGit(parentDir)
         assert.strictEqual(result, false);
@@ -38,7 +38,7 @@ suite("Testing Utils",()=>{
     })
 
     test("Test getting last log message of a git directory", ()=>{
-        const projDir = vscode.Uri.file(path.join(process.cwd(), "../../"))
+        const projDir = vscode.Uri.file(path.join(__dirname, "../../"))
         const msg = utils.dirGetLastLogMessage(projDir);
         assert.notEqual(msg,undefined)
     })
