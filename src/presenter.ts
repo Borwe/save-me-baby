@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { dirGetLastLogMessage, dirIsGit, getParentDir } from './utils';
+import { dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
 import { log } from 'console';
 
 export class Presnter {
@@ -32,6 +32,8 @@ export class Presnter {
 		if(logMsg===undefined){
 			logMsg = "First Commit"
 		}
+		//start the git push and commit process here
+		startGitCommit(logMsg!)
 	}
 
     setupCommands(context: vscode.ExtensionContext){

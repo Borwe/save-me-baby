@@ -59,4 +59,12 @@ suite("Testing Utils",()=>{
         deleteCreatedNoCommitDir(noCommitDir!)
         assert.equal(msg, undefined)
     })
+
+    test("Test if can Start Git Commit on none commited git dir", async ()=>{
+        const noCommitDir = getOrCreateNoCommitDir()
+        const msg = utils.dirGetLastLogMessage(noCommitDir!)
+        const commitCode = await utils.startGitCommit(msg!)
+        deleteCreatedNoCommitDir(noCommitDir!)
+        assert.notEqual(commitCode, undefined)
+    })
 })

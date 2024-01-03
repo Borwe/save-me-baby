@@ -34,7 +34,6 @@ export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
         result = String(exec).split("\n")[0].trim()
     }catch(err: any){
         result = String(err.stderr)
-        console.log("ERROR IS: ",result)
     }
     process.chdir(cwd)
     if(result.includes("fatal: your current branch")){
@@ -43,4 +42,8 @@ export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
     let lastLogMessagePos = result.indexOf(" ")
     let lastLogMessage = result.substring(lastLogMessagePos+1)
     return lastLogMessage;
+}
+
+export async function startGitCommit(logMsg: string): Promise<string | undefined>{
+    return undefined
 }
