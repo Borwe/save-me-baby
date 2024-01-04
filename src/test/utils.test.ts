@@ -60,11 +60,20 @@ suite("Testing Utils",()=>{
         assert.equal(msg, undefined)
     })
 
-    test("Test if can Start Git Commit on none commited git dir", async ()=>{
+    test("Test if can Start Git Commit on none commited git dir succesfully", async ()=>{
         const noCommitDir = getOrCreateNoCommitDir()
         const msg = utils.dirGetLastLogMessage(noCommitDir!)
-        const commitCode = await utils.startGitCommit(msg!)
+        //create file
+        const testFile = vscode.Uri.file(path.join(noCommitDir!.fsPath, "Test.txt"))
+        fs.writeFileSync(testFile.fsPath, "Hello")
+        const commitCode: utils.CommitStatus = await utils.startGitCommit(msg!, testFile)
+        process.chdir(__dirname)
         deleteCreatedNoCommitDir(noCommitDir!)
         assert.notEqual(commitCode, undefined)
+        console.log("CODE IS:",commitCode.error)
+    })
+
+    test("Test if can start Git Commit on dir with already previous commits", ()=>{
+        
     })
 })

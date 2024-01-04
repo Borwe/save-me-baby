@@ -25,7 +25,7 @@ export class Presnter {
 		}
 	}
 
-	gitCommit(logMsg: string | undefined){
+	gitCommit(logMsg: string | undefined, dir: vscode.Uri){
 		//if logMsg is undefined, show a message telling user
 		// you going to use git message of "First commit"
 		//then go ahead and save
@@ -33,7 +33,7 @@ export class Presnter {
 			logMsg = "First Commit"
 		}
 		//start the git push and commit process here
-		startGitCommit(logMsg!)
+		startGitCommit(logMsg!, dir)
 	}
 
     setupCommands(context: vscode.ExtensionContext){
@@ -47,7 +47,7 @@ export class Presnter {
 					//if so then go and get last git log
 					let lastLog = dirGetLastLogMessage(parent_dir)
 					//create git commit
-					PRESENTER.gitCommit(lastLog)
+					PRESENTER.gitCommit(lastLog, parent_dir)
 				}
 				//Letter have a setting to allow initializing repo incase no git
 			})
