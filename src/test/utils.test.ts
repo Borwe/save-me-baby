@@ -63,17 +63,41 @@ suite("Testing Utils",()=>{
     test("Test if can Start Git Commit on none commited git dir succesfully", async ()=>{
         const noCommitDir = getOrCreateNoCommitDir()
         const msg = utils.dirGetLastLogMessage(noCommitDir!)
+        assert.equal(msg, undefined)
         //create file
         const testFile = vscode.Uri.file(path.join(noCommitDir!.fsPath, "Test.txt"))
         fs.writeFileSync(testFile.fsPath, "Hello")
-        const commitCode: utils.CommitStatus = await utils.startGitCommit(msg!, testFile)
+        const commitStatus: utils.CommitStatus = await utils.startGitCommit(msg, testFile)
+        const msgCommit = utils.dirGetLastLogMessage(noCommitDir!)
+        assert.strictEqual(msgCommit, "First Commit.")
         process.chdir(__dirname)
         deleteCreatedNoCommitDir(noCommitDir!)
-        assert.notEqual(commitCode, undefined)
-        console.log("CODE IS:",commitCode.error)
+        const commitSuccess: utils.CommitStatus = {
+            error: undefined,
+            msg: undefined,
+            status: "Comitted"
+        }
+        assert.equal(commitStatus.status, commitSuccess.status)
+        assert.equal(commitStatus.error, undefined)
     })
 
     test("Test if can start Git Commit on dir with already previous commits", ()=>{
-        
+        //const oneCommitDir = getOrCreateOneCommitDir() //has one file, yolo.txt
+        //const msg = utils.dirGetLastLogMessage(oneCommitDir!)
+        //assert.strictEqual(msg, "test commit")
+        //const code = utils.dirGetLastLogMessageCode(oneCommitDir)
+        ////create file
+        //const testFile = vscode.Uri.file(path.join(oneCommitDir!.fsPath, "yolo.txt"))
+        //fs.appendFileSync(testFile.fsPath, "\nHello and Yolo\n")
+        //const commitCode: utils.CommitStatus = await utils.startGitCommit(msg!, testFile)
+        //process.chdir(__dirname)
+        //deleteCreatedNoCommitDir(oneCommitDir!)
+        //const commitSuccess: utils.CommitStatus = {
+        //    error: undefined,
+        //    msg: undefined,
+        //    status: "Comitted"
+        //}
+        //assert.equal(commitCode.status, commitSuccess.status)
+        //console.log("CODE IS:",commitCode.error)
     })
 })

@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 import * as fs from 'fs'
 import { execSync } from 'child_process'
 
-type CommitStatusType =  "Comitted" | "Error" | "None";
+export type CommitStatusType =  "Comitted" | "Error" | "None";
 export type CommitStatus = {
     status: CommitStatusType 
     msg: string | undefined
@@ -74,7 +74,7 @@ export function dirGetLastLogMessageCode(uri: vscode.Uri): string | undefined {
  * if error occurs the string will contain the error message
  * and not the git commit code.
  */
-export async function startGitCommit(logMsg: string, file: vscode.Uri): Promise<CommitStatus>{
+export async function startGitCommit(logMsg: string | undefined, file: vscode.Uri): Promise<CommitStatus>{
     let commitStatus: CommitStatus = {
         status: "None",
         msg: undefined,
@@ -86,12 +86,15 @@ export async function startGitCommit(logMsg: string, file: vscode.Uri): Promise<
         commitStatus.error = "File "+file.fragment+"Doesn't exist on disk yet, can't be commited"
         return commitStatus
     }
+    if(logMsg===undefined){
+        logMsg="First Commit."
+    }
     let currDir = process.cwd()
     try{
         const parentDir = getParentDir(file)
         process.chdir(parentDir.fsPath)
         execSync("git add "+file.fsPath)
-        execSync("git commit -m '"+logMsg+"'")
+        execSync("git commit -m \""+logMsg+"\"")
         const gitCode = dirGetLastLogMessageCode(parentDir)
         if(gitCode===undefined){
             commitStatus.status = "Error"
