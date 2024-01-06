@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import * as fs from 'fs'
 import * as utils from '../utils'
 import { homedir } from 'os'
-import { deleteCreatedNoCommitDir, getOrCreateNoCommitDir } from './utils_for_tests'
+import { deleteCreatedNoCommitDir, getOrCreateNoCommitDir, getOrCreateOneCommitDir } from './utils_for_tests'
 
 suite("Testing Utils",()=>{
     test("Test getting parent dir", ()=>{
@@ -81,23 +81,27 @@ suite("Testing Utils",()=>{
         assert.equal(commitStatus.error, undefined)
     })
 
-    test("Test if can start Git Commit on dir with already previous commits", ()=>{
-        //const oneCommitDir = getOrCreateOneCommitDir() //has one file, yolo.txt
-        //const msg = utils.dirGetLastLogMessage(oneCommitDir!)
-        //assert.strictEqual(msg, "test commit")
-        //const code = utils.dirGetLastLogMessageCode(oneCommitDir)
-        ////create file
-        //const testFile = vscode.Uri.file(path.join(oneCommitDir!.fsPath, "yolo.txt"))
-        //fs.appendFileSync(testFile.fsPath, "\nHello and Yolo\n")
-        //const commitCode: utils.CommitStatus = await utils.startGitCommit(msg!, testFile)
-        //process.chdir(__dirname)
-        //deleteCreatedNoCommitDir(oneCommitDir!)
-        //const commitSuccess: utils.CommitStatus = {
-        //    error: undefined,
-        //    msg: undefined,
-        //    status: "Comitted"
-        //}
-        //assert.equal(commitCode.status, commitSuccess.status)
-        //console.log("CODE IS:",commitCode.error)
+    test("Test if can start Git Commit on dir with already previous commits", async ()=>{
+        const oneCommitDir = getOrCreateOneCommitDir() //has one file, yolo.txt
+        assert.notEqual(oneCommitDir, undefined)
+        const msg = utils.dirGetLastLogMessage(oneCommitDir!)
+        assert.strictEqual(msg, "test commit")
+        const code = utils.dirGetLastLogMessageCode(oneCommitDir!)
+        assert.notEqual(code, undefined)
+        //create file
+        const testFile = vscode.Uri.file(path.join(oneCommitDir!.fsPath, "yolo.txt"))
+        fs.appendFileSync(testFile.fsPath, "\nHello and Yolo\n")
+        const commitCode: utils.CommitStatus = await utils.startGitCommit(msg!, testFile)
+        process.chdir(__dirname)
+        const newCode = utils.dirGetLastLogMessageCode(oneCommitDir!)
+        assert.notEqual(newCode, undefined)
+        assert.notEqual(newCode, code)
+        deleteCreatedNoCommitDir(oneCommitDir!)
+        const commitSuccess: utils.CommitStatus = {
+            error: undefined,
+            msg: undefined,
+            status: "Comitted"
+        }
+        assert.equal(commitCode.status, commitSuccess.status)
     })
 })
