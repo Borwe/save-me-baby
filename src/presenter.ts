@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
+import { CommitStatus, dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
 import { log } from 'console';
 
 export class Presnter {
     private _enabled: boolean = false
 	private disposableForOnSaveListener: vscode.Disposable | null = null
-	currentGitted: Promise<void> | null = null
+	currentGitted: Promise<CommitStatus> | undefined = undefined
 	private loaded = false;
 
 	// Hold onSalve listener object
@@ -26,14 +26,11 @@ export class Presnter {
 	}
 
 	gitCommit(logMsg: string | undefined, dir: vscode.Uri){
-		//if logMsg is undefined, show a message telling user
-		// you going to use git message of "First commit"
-		//then go ahead and save
-		if(logMsg===undefined){
-			logMsg = "First Commit"
-		}
 		//start the git push and commit process here
-		startGitCommit(logMsg!, dir)
+		console.log("PLEASE STARTING SAVE:", dir.fsPath)
+		if(this._enabled){
+			this.currentGitted = startGitCommit(logMsg, dir)
+		}
 	}
 
     setupCommands(context: vscode.ExtensionContext){
@@ -47,7 +44,7 @@ export class Presnter {
 					//if so then go and get last git log
 					let lastLog = dirGetLastLogMessage(parent_dir)
 					//create git commit
-					PRESENTER.gitCommit(lastLog, parent_dir)
+					PRESENTER.gitCommit(lastLog, doc.uri)
 				}
 				//Letter have a setting to allow initializing repo incase no git
 			})
