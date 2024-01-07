@@ -32,7 +32,7 @@ suite('Test commands', () => {
 	})
 
 
-	test("turning start_saving on and see if it works", async ()=>{
+	test("turning start_saving on and try saving on a none-git repo, it should not start commit", async ()=>{
 		let result = await vscode.commands.executeCommand('save-me-baby.start-saving')
 		assert.strictEqual(result, true)
 
@@ -44,8 +44,6 @@ suite('Test commands', () => {
 		//when here means there must be a new Promise in currentGitted 
 		//for saving the file and executing git cmd, check it
 		//exists
-		assert.notEqual(PRESENTER.currentGitted, undefined)
-		const commitResult = await PRESENTER.currentGitted!
-		assert.strictEqual(commitResult.status,"Comitted")
+		assert.equal(PRESENTER.currentGitted, undefined)
 	})
 });
