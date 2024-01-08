@@ -3,6 +3,8 @@ import * as vscode from 'vscode'
 import * as fs from 'fs'
 import { execSync } from 'child_process'
 
+export type CommitFunction =  (commitStatus: CommitStatus) => void
+
 export type CommitStatusType =  "Comitted" | "Error" | "None";
 export type CommitStatus = {
     status: CommitStatusType 
@@ -74,7 +76,7 @@ export function dirGetLastLogMessageCode(uri: vscode.Uri): string | undefined {
  * if error occurs the string will contain the error message
  * and not the git commit code.
  */
-export async function startGitCommit(logMsg: string | undefined, file: vscode.Uri): Promise<CommitStatus>{
+export async function startGitCommit(logMsg: string | undefined, file: vscode.Uri, func: CommitFunction | undefined = undefined ){
     let commitStatus: CommitStatus = {
         status: "None",
         msg: undefined,
@@ -84,7 +86,10 @@ export async function startGitCommit(logMsg: string | undefined, file: vscode.Ur
     if(!fs.existsSync(file.fsPath)){
         commitStatus.status = "Error"
         commitStatus.error = "File "+file.fragment+"Doesn't exist on disk yet, can't be commited"
-        return commitStatus
+        if(func){
+            func!(commitStatus)
+        }
+        return
     }
     if(logMsg===undefined){
         logMsg="First Commit."
@@ -99,16 +104,25 @@ export async function startGitCommit(logMsg: string | undefined, file: vscode.Ur
         if(gitCode===undefined){
             commitStatus.status = "Error"
             commitStatus.error = "Couldn't get last Log message, can't confirm commit"
-            return commitStatus
+            if(func){
+                func!(commitStatus)
+            }
+            return
         }
 
         commitStatus.msg = gitCode!
         commitStatus.status = "Comitted"
-        return commitStatus
+        if(func){
+            func!(commitStatus)
+        }
+        return
     }catch(err: any){
         commitStatus.status = "Error"
         commitStatus.error = "Error, couldn't commit "+err.stderr
-        return commitStatus
+        if(func){
+            func!(commitStatus)
+        }
+        return
     }finally{
         process.chdir(currDir)
     }

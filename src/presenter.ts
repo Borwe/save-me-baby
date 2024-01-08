@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { CommitStatus, dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
+import { CommitFunction, CommitStatus, dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
 import { log } from 'console';
 
-export class Presnter {
+export class Presenter {
     private _enabled: boolean = false
 	private disposableForOnSaveListener: vscode.Disposable | null = null
-	currentGitted: Promise<CommitStatus> | undefined = undefined
+	currentGitted: CommitFunction | undefined = undefined
 	private loaded = false;
 
 	// Hold onSalve listener object
@@ -27,9 +27,9 @@ export class Presnter {
 
 	gitCommit(logMsg: string | undefined, dir: vscode.Uri){
 		//start the git push and commit process here
-		console.log("PLEASE STARTING SAVE:", dir.fsPath)
 		if(this._enabled){
-			this.currentGitted = startGitCommit(logMsg, dir)
+			console.log("PLEASE STARTING SAVE:", dir.fsPath)
+			startGitCommit(logMsg, dir, this.currentGitted)
 		}
 	}
 
@@ -78,5 +78,5 @@ export class Presnter {
     }
 }
 
-const PRESENTER: Presnter = new Presnter()
+const PRESENTER: Presenter = new Presenter()
 export default PRESENTER

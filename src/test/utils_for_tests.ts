@@ -3,13 +3,24 @@ import * as vscode from "vscode"
 import * as fs from "fs"
 import { execSync } from "child_process"
 
+
+export type CallBackCompleteStatus<T> = {
+	complete: boolean,
+	val: T | undefined
+}
+
+export function createTestDir(dirName: string): vscode.Uri {
+    const mainDir = path.join(__dirname, "../../"+dirName)
+    fs.mkdirSync(mainDir, {recursive: true})
+    return vscode.Uri.file(mainDir)
+}
+
 export function getOrCreateNoCommitDir(): vscode.Uri | undefined{
-    const mainDir = path.join(__dirname, "../../test_no_commit")
     try{
-        fs.mkdirSync(mainDir, {recursive: true})
-        process.chdir(mainDir)
+        const mainDir = createTestDir("test_no_commit")
+        process.chdir(mainDir.fsPath)
         execSync("git init")
-        return vscode.Uri.file(mainDir)
+        return mainDir
     }catch(err){}finally{
         process.chdir(__dirname)
     }
@@ -17,22 +28,21 @@ export function getOrCreateNoCommitDir(): vscode.Uri | undefined{
 }
 
 export function  getOrCreateOneCommitDir(): vscode.Uri | undefined {
-    const mainDir = path.join(__dirname, "../../test_one_commit")
     try{
-        fs.mkdirSync(mainDir, {recursive: true})
-        process.chdir(mainDir)
+        const mainDir =  createTestDir("test_one_commit")
+        process.chdir(mainDir.fsPath)
         execSync("git init")
-        fs.writeFileSync(path.join(mainDir,"yolo.txt"), "yolo baby")
-        execSync("git add "+path.join(mainDir,"yolo.txt"))
+        fs.writeFileSync(path.join(mainDir.fsPath,"yolo.txt"), "yolo baby")
+        execSync("git add "+path.join(mainDir.fsPath,"yolo.txt"))
         execSync("git commit -m \"test commit\"")
-        return vscode.Uri.file(mainDir)
+        return mainDir
     }catch(err){}finally{
         process.chdir(__dirname)
     }
     return undefined
 }
 
-export function deleteCreatedNoCommitDir(dir: vscode.Uri) {
+export function deleteDir(dir: vscode.Uri) {
     if(fs.existsSync(dir.fsPath)){
         fs.rmSync(dir.fsPath, { recursive: true })
     }

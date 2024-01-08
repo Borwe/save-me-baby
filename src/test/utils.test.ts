@@ -4,7 +4,9 @@ import * as vscode from 'vscode'
 import * as fs from 'fs'
 import * as utils from '../utils'
 import { homedir } from 'os'
-import { deleteCreatedNoCommitDir, getOrCreateNoCommitDir, getOrCreateOneCommitDir } from './utils_for_tests'
+import { CallBackCompleteStatus, deleteDir, getOrCreateNoCommitDir, getOrCreateOneCommitDir } from './utils_for_tests'
+import { CommitStatus } from '../utils'
+import PRESENTER from '../presenter'
 
 suite("Testing Utils",()=>{
     test("Test getting parent dir", ()=>{
@@ -47,7 +49,7 @@ suite("Testing Utils",()=>{
         const noCommitDir = getOrCreateNoCommitDir()
         assert.notDeepEqual(noCommitDir, undefined)
         test("Test deleting no commit dir", ()=>{
-            deleteCreatedNoCommitDir(noCommitDir!)
+            deleteDir(noCommitDir!)
             const exists = fs.existsSync(noCommitDir!.fsPath)
             assert.equal(exists, false)
         })
@@ -56,7 +58,7 @@ suite("Testing Utils",()=>{
     test("Test getting last log message of a git directory with no previous commit", ()=>{
         const noCommitDir = getOrCreateNoCommitDir()
         const msg = utils.dirGetLastLogMessage(noCommitDir!)
-        deleteCreatedNoCommitDir(noCommitDir!)
+        deleteDir(noCommitDir!)
         assert.equal(msg, undefined)
     })
 
@@ -67,18 +69,20 @@ suite("Testing Utils",()=>{
         //create file
         const testFile = vscode.Uri.file(path.join(noCommitDir!.fsPath, "Test.txt"))
         fs.writeFileSync(testFile.fsPath, "Hello")
-        const commitStatus: utils.CommitStatus = await utils.startGitCommit(msg, testFile)
+		let callbackResult: CallBackCompleteStatus<CommitStatus> = {
+			complete: false,
+			val: undefined
+		}
+        await utils.startGitCommit(msg, testFile, (commitStatus)=> {
+			callbackResult.complete = true
+			callbackResult.val = commitStatus
+		})
         const msgCommit = utils.dirGetLastLogMessage(noCommitDir!)
         assert.strictEqual(msgCommit, "First Commit.")
         process.chdir(__dirname)
-        deleteCreatedNoCommitDir(noCommitDir!)
-        const commitSuccess: utils.CommitStatus = {
-            error: undefined,
-            msg: undefined,
-            status: "Comitted"
-        }
-        assert.equal(commitStatus.status, commitSuccess.status)
-        assert.equal(commitStatus.error, undefined)
+        deleteDir(noCommitDir!)
+        assert.equal(callbackResult.val!.status, "Comitted")
+        assert.equal(callbackResult.val!.error, undefined)
     })
 
     test("Test if can start Git Commit on dir with already previous commits", async ()=>{
@@ -91,17 +95,19 @@ suite("Testing Utils",()=>{
         //create file
         const testFile = vscode.Uri.file(path.join(oneCommitDir!.fsPath, "yolo.txt"))
         fs.appendFileSync(testFile.fsPath, "\nHello and Yolo\n")
-        const commitCode: utils.CommitStatus = await utils.startGitCommit(msg!, testFile)
+		let callbackResult: CallBackCompleteStatus<CommitStatus> = {
+			complete: false,
+			val: undefined
+		}
+        await utils.startGitCommit(msg, testFile, (commitStatus)=> {
+			callbackResult.complete = true
+			callbackResult.val = commitStatus
+		})
         process.chdir(__dirname)
         const newCode = utils.dirGetLastLogMessageCode(oneCommitDir!)
         assert.notEqual(newCode, undefined)
         assert.notEqual(newCode, code)
-        deleteCreatedNoCommitDir(oneCommitDir!)
-        const commitSuccess: utils.CommitStatus = {
-            error: undefined,
-            msg: undefined,
-            status: "Comitted"
-        }
-        assert.equal(commitCode.status, commitSuccess.status)
+        deleteDir(oneCommitDir!)
+        assert.equal(callbackResult.val!.status, "Comitted")
     })
 })
