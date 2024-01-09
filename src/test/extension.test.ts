@@ -32,8 +32,6 @@ suite('Test commands', () => {
 
 		//emit an open command to open new file
 		const file = vscode.Uri.file(path.join(test_dir.fsPath,"test.txt"))
-		//get size of promises
-		const length = Presenter.getInstance().promises.length
 		//write some text to it and save the current file
 		await writeToFile("Hello", file);
 		//wait for 1 second
@@ -65,7 +63,6 @@ suite('Test commands', () => {
 
 		//emit an open command to open new file
 		const file = vscode.Uri.file(path.join(dir!.fsPath,"test.txt"))
-		const length = Presenter.getInstance().promises.length
 		//write some text to it and save the current file
 		await writeToFile("Yebooo baby!", file);
 		//wait for 1 second

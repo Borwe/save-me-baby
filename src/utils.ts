@@ -72,6 +72,20 @@ export function dirGetLastLogMessageCode(uri: vscode.Uri): string | undefined {
     return result.substring(0,lastLogMessagePos)
 }
 
+export async function gitPush(dir: vscode.Uri) {
+    const currDir = process.cwd()
+    process.chdir(dir.fsPath)
+
+    try{
+        execSync("git push")
+        const code = dirGetLastLogMessageCode(dir)
+        vscode.window.showInformationMessage("😄 SaveMeBaby: Git push success ["+code!+"]")
+    }catch(err: any){
+        vscode.window.showErrorMessage("😞 SaveMeBaby: Git push failed, error: ["+err.strerr+"]")
+    }
+    process.chdir(currDir)
+}
+
 /** Returns the git code represntation of the commit,
  * if error occurs the string will contain the error message
  * and not the git commit code.

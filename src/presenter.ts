@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
-import { CommitFunction, CommitStatus, dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
+import { dirGetLastLogMessage, dirIsGit, getParentDir, gitPush, startGitCommit } from './utils';
 
 export class Presenter {
     private _enabled: boolean = false
 	private disposableForOnSaveListener: vscode.Disposable | null = null
-	promises: Array<Promise<CommitStatus>> = new Array()
 	private loaded = false;
 
 	private static instance: Presenter | null = null 
@@ -25,19 +24,19 @@ export class Presenter {
         this._enabled = !this._enabled
     }
 
-	gitCommit(logMsg: string | undefined, dir: vscode.Uri){
+	gitCommit(logMsg: string | undefined, file: vscode.Uri){
 		//start the git push and commit process here
 		if(this._enabled){
-			const pos = this.promises.length
-			this.promises.push(new Promise((resolve)=>{
-				console.log("PLEASE STARTING SAVE:", dir.fsPath)
-				startGitCommit(logMsg, dir, resolve)
-				if(pos>0){
-					this.promises.splice(pos-1,1)
-				}else{
-					this.promises = new Array()
+			console.log("PLEASE STARTING SAVE:", file.fsPath)
+			startGitCommit(logMsg, file, (commitStatus)=>{
+				if(commitStatus.status === "Comitted"){
+					//start git push
+					gitPush(getParentDir(file))
+				}else if(commitStatus.status === "Error"){
+					//show popup of error
+					vscode.window.showErrorMessage("🤯 Error in commiting: "+commitStatus.error)
 				}
-			}))
+			})
 		}
 	}
 
