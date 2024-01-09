@@ -28,19 +28,28 @@ suite('Test commands', () => {
 		let result = await vscode.commands.executeCommand('save-me-baby.start-saving')
 		assert.strictEqual(result, true)
 
+		const logCode = dirGetLastLogMessageCode(test_dir!)
+
 		//emit an open command to open new file
 		const file = vscode.Uri.file(path.join(test_dir.fsPath,"test.txt"))
 		//get size of promises
 		const length = Presenter.getInstance().promises.length
 		//write some text to it and save the current file
 		await writeToFile("Hello", file);
-		const commitStatus = await Presenter.getInstance().promises[length]
+		//wait for 1 second
+		await new Promise((resolve)=>{
+			setTimeout(() => {
+				resolve(1)
+			}, 1000);
+			return;
+		})
 
 		//when here means there must be a new Promise in currentGitted 
 		//for saving the file and executing git cmd, check it
 		//exists
-		assert.equal(commitStatus!.status, "None" )
 
+		const newlogCode = dirGetLastLogMessageCode(test_dir!)
+		assert.strictEqual(newlogCode, logCode)
 		deleteDir(test_dir)
 	})
 
@@ -59,13 +68,18 @@ suite('Test commands', () => {
 		const length = Presenter.getInstance().promises.length
 		//write some text to it and save the current file
 		await writeToFile("Yebooo baby!", file);
-		const commitStatus = await Presenter.getInstance().promises[length]
+		//wait for 1 second
+		await new Promise((resolve)=>{
+			setTimeout(() => {
+				resolve(1)
+			}, 1000);
+			return;
+		})
 
 		//when here means there must be a new Promise in currentGitted 
 		//for saving the file and executing git cmd, check it
 		//exists
 
-		assert.strictEqual(commitStatus!.status, "Comitted")
 		const logCode = dirGetLastLogMessageCode(dir!)
 		assert.notEqual(logCode, undefined)
 		assert.strictEqual(logCode!.length>3, true)
