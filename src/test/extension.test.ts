@@ -3,17 +3,11 @@ import * as assert from 'assert';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-import PRESENTER from '../presenter';
-import path, { resolve } from 'path';
-import * as fs from 'fs';
+import path from 'path';
 import { CommitStatus, dirGetLastLogMessageCode } from '../utils';
-import { createTestDir, deleteDir, getOrCreateNoCommitDir } from './utils_for_tests';
+import { CallBackCompleteStatus, createTestDir, deleteDir, getOrCreateNoCommitDir } from './utils_for_tests';
+import { Presenter } from '../presenter';
 // import * as myExtension from '../../extension';
-
-type CallBackCompleteStatus<T> = {
-	complete: boolean,
-	val: T | undefined
-}
 
 async function writeToFile(content: string, file: vscode.Uri){
 	await vscode.workspace.fs.writeFile(file, Buffer.from(content))
@@ -28,8 +22,6 @@ async function writeToFile(content: string, file: vscode.Uri){
 
 suite('Test commands', () => {
 
-
-
 	test("turning start_saving on and try saving on a none-git repo, it should not start commit", async ()=>{
 		await vscode.extensions.getExtension("borwe.save-me-baby")!.activate()
 		const test_dir = createTestDir("test_dir")
@@ -38,26 +30,16 @@ suite('Test commands', () => {
 
 		//emit an open command to open new file
 		const file = vscode.Uri.file(path.join(test_dir.fsPath,"test.txt"))
+		//get size of promises
+		const length = Presenter.getInstance().promises.length
 		//write some text to it and save the current file
 		await writeToFile("Hello", file);
-		await new Promise(resolve=>{
-			setTimeout(()=>{resolve(1)}, 1000)
-		})
-
+		const commitStatus = await Presenter.getInstance().promises[length]
 
 		//when here means there must be a new Promise in currentGitted 
 		//for saving the file and executing git cmd, check it
 		//exists
-		let callbackResult: CallBackCompleteStatus<CommitStatus> = {
-			complete: false,
-			val: undefined
-		}
-		PRESENTER.currentGitted = (commitStatus)=> {
-			callbackResult.complete = true
-			callbackResult.val = commitStatus
-		}
-		while(callbackResult.complete===false){}
-		assert.equal(callbackResult.val!.status, "None" )
+		assert.equal(commitStatus!.status, "None" )
 
 		deleteDir(test_dir)
 	})
@@ -74,27 +56,16 @@ suite('Test commands', () => {
 
 		//emit an open command to open new file
 		const file = vscode.Uri.file(path.join(dir!.fsPath,"test.txt"))
+		const length = Presenter.getInstance().promises.length
 		//write some text to it and save the current file
 		await writeToFile("Yebooo baby!", file);
-		await new Promise(resolve=>{
-			setTimeout(()=>{resolve(1)}, 1000)
-		})
+		const commitStatus = await Presenter.getInstance().promises[length]
 
 		//when here means there must be a new Promise in currentGitted 
 		//for saving the file and executing git cmd, check it
 		//exists
-		let callbackResult: CallBackCompleteStatus<CommitStatus> = {
-			complete: false,
-			val: undefined
-		}
-		PRESENTER.currentGitted = (commitStatus)=> {
-			callbackResult.complete = true
-			callbackResult.val = commitStatus
-		}
 
-		while(callbackResult.complete===false){ }
-
-		assert.strictEqual(callbackResult.val!.status, "Comitted")
+		assert.strictEqual(commitStatus!.status, "Comitted")
 		const logCode = dirGetLastLogMessageCode(dir!)
 		assert.notEqual(logCode, undefined)
 		assert.strictEqual(logCode!.length>3, true)

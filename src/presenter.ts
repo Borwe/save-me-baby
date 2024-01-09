@@ -1,15 +1,23 @@
 import * as vscode from 'vscode';
 import { CommitFunction, CommitStatus, dirGetLastLogMessage, dirIsGit, getParentDir, startGitCommit } from './utils';
-import { log } from 'console';
 
 export class Presenter {
     private _enabled: boolean = false
 	private disposableForOnSaveListener: vscode.Disposable | null = null
-	currentGitted: CommitFunction | undefined = undefined
+	promises: Array<Promise<CommitStatus>> = new Array()
 	private loaded = false;
+
+	private static instance: Presenter | null = null 
 
 	// Hold onSalve listener object
 	onSaveListener = false;
+
+	static getInstance(): Presenter {
+		if(!Presenter.instance){
+			Presenter.instance = new Presenter()
+		}
+		return Presenter.instance
+	}
 
     get enabled(): boolean { return this._enabled } 
     /** Toggle to enable or disable saving */
@@ -17,19 +25,19 @@ export class Presenter {
         this._enabled = !this._enabled
     }
 
-	async waitTillCommandsSetup(){
-		while(!this.loaded){
-			await new Promise((resolve)=>{
-				setTimeout(()=>{},100)
-			})
-		}
-	}
-
 	gitCommit(logMsg: string | undefined, dir: vscode.Uri){
 		//start the git push and commit process here
 		if(this._enabled){
-			console.log("PLEASE STARTING SAVE:", dir.fsPath)
-			startGitCommit(logMsg, dir, this.currentGitted)
+			const pos = this.promises.length
+			this.promises.push(new Promise((resolve)=>{
+				console.log("PLEASE STARTING SAVE:", dir.fsPath)
+				startGitCommit(logMsg, dir, resolve)
+				if(pos>0){
+					this.promises.splice(pos-1,1)
+				}else{
+					this.promises = new Array()
+				}
+			}))
 		}
 	}
 
@@ -44,7 +52,7 @@ export class Presenter {
 					//if so then go and get last git log
 					let lastLog = dirGetLastLogMessage(parent_dir)
 					//create git commit
-					PRESENTER.gitCommit(lastLog, doc.uri)
+					this.gitCommit(lastLog, doc.uri)
 				}
 				//Letter have a setting to allow initializing repo incase no git
 			})
@@ -62,8 +70,8 @@ export class Presenter {
 		context.subscriptions.push(disposable);
 
 		disposable = vscode.commands.registerCommand('save-me-baby.toggle', () => {
-			PRESENTER.toggle()
-			if(PRESENTER.enabled){
+			this.toggle()
+			if(this.enabled){
 				this.disposableForOnSaveListener?.dispose()
 				this.disposableForOnSaveListener = null
 				vscode.window.showInformationMessage('Stoping to Save Save you 😥!');
@@ -77,6 +85,3 @@ export class Presenter {
 		this.loaded = true;
     }
 }
-
-const PRESENTER: Presenter = new Presenter()
-export default PRESENTER

@@ -76,7 +76,7 @@ export function dirGetLastLogMessageCode(uri: vscode.Uri): string | undefined {
  * if error occurs the string will contain the error message
  * and not the git commit code.
  */
-export async function startGitCommit(logMsg: string | undefined, file: vscode.Uri, func: CommitFunction | undefined = undefined ){
+export async function startGitCommit(logMsg: string | undefined, file: vscode.Uri, func: CommitFunction){
     let commitStatus: CommitStatus = {
         status: "None",
         msg: undefined,
@@ -86,9 +86,7 @@ export async function startGitCommit(logMsg: string | undefined, file: vscode.Ur
     if(!fs.existsSync(file.fsPath)){
         commitStatus.status = "Error"
         commitStatus.error = "File "+file.fragment+"Doesn't exist on disk yet, can't be commited"
-        if(func){
-            func!(commitStatus)
-        }
+        func(commitStatus)
         return
     }
     if(logMsg===undefined){
@@ -104,24 +102,18 @@ export async function startGitCommit(logMsg: string | undefined, file: vscode.Ur
         if(gitCode===undefined){
             commitStatus.status = "Error"
             commitStatus.error = "Couldn't get last Log message, can't confirm commit"
-            if(func){
-                func!(commitStatus)
-            }
+            func(commitStatus)
             return
         }
 
         commitStatus.msg = gitCode!
         commitStatus.status = "Comitted"
-        if(func){
-            func!(commitStatus)
-        }
+        func(commitStatus)
         return
     }catch(err: any){
         commitStatus.status = "Error"
         commitStatus.error = "Error, couldn't commit "+err.stderr
-        if(func){
-            func!(commitStatus)
-        }
+        func(commitStatus)
         return
     }finally{
         process.chdir(currDir)

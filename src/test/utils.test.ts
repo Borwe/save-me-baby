@@ -6,7 +6,6 @@ import * as utils from '../utils'
 import { homedir } from 'os'
 import { CallBackCompleteStatus, deleteDir, getOrCreateNoCommitDir, getOrCreateOneCommitDir } from './utils_for_tests'
 import { CommitStatus } from '../utils'
-import PRESENTER from '../presenter'
 
 suite("Testing Utils",()=>{
     test("Test getting parent dir", ()=>{
