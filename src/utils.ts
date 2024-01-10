@@ -82,7 +82,7 @@ export async function gitPush(dir: vscode.Uri) {
         const code = dirGetLastLogMessageCode(dir)
         vscode.window.showInformationMessage("😄 SaveMeBaby: Git push success ["+code!+"]")
     }catch(err: any){
-        vscode.window.showErrorMessage("😞 SaveMeBaby: Git push failed, error: ["+err.strerr+"]")
+        vscode.window.showErrorMessage("😞 SaveMeBaby: Git push failed, error: ["+err.stderr+"]")
     }
     process.chdir(currDir)
 }
