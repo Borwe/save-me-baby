@@ -5,7 +5,7 @@ import { execSync } from 'child_process'
 
 export type CommitFunction =  (commitStatus: CommitStatus) => void
 
-export type CommitStatusType =  "Comitted" | "Error" | "None";
+export type CommitStatusType =  "Comitted" | "Error" | "None" | "GitIgnored";
 export type CommitStatus = {
     status: CommitStatusType 
     msg: string | undefined
@@ -33,6 +33,7 @@ export function dirIsGit(uri: vscode.Uri): boolean {
     }
     return false
 }
+
 
 export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
     const cwd = process.cwd()
@@ -125,8 +126,14 @@ export async function startGitCommit(logMsg: string | undefined, file: vscode.Ur
         func(commitStatus)
         return
     }catch(err: any){
-        commitStatus.status = "Error"
-        commitStatus.error = "Error, couldn't commit "+err.stderr
+        const errString = String(err.stderr)
+        if(errString.includes("paths are ignored")){
+            console.log("FUCK YEAH!!!!!!!!!!!", file.fsPath)
+            commitStatus.status = "GitIgnored"
+        }else{
+            commitStatus.status = "Error"
+        }
+        commitStatus.error = errString
         func(commitStatus)
         return
     }finally{

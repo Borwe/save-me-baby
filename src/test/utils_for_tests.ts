@@ -9,6 +9,23 @@ export type CallBackCompleteStatus<T> = {
 	val: T | undefined
 }
 
+export function getOrCreateNoCommitDirWithGitIgnore(gitIgnoreContent: string): vscode.Uri | undefined{
+    const cwd = process.cwd()
+    const rootPath = path.join(__dirname, "../../")
+    try{
+        const gitDir = createTestDir("test_withgitignore")
+        process.chdir(gitDir.fsPath)
+        execSync("git init")
+        fs.writeFileSync(path.join(gitDir.fsPath, ".gitignore"),gitIgnoreContent)
+        return gitDir
+    }catch(err){
+        console.log("ERROR",err)
+    }finally{ 
+        process.chdir(cwd)
+    }
+    return undefined
+}
+
 export function createTestDir(dirName: string): vscode.Uri {
     const mainDir = path.join(__dirname, "../../"+dirName)
     fs.mkdirSync(mainDir, {recursive: true})

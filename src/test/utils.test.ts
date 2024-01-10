@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import * as fs from 'fs'
 import * as utils from '../utils'
 import { homedir } from 'os'
-import { CallBackCompleteStatus, deleteDir, getOrCreateNoCommitDir, getOrCreateOneCommitDir } from './utils_for_tests'
+import { CallBackCompleteStatus, deleteDir, getOrCreateNoCommitDir, getOrCreateNoCommitDirWithGitIgnore, getOrCreateOneCommitDir } from './utils_for_tests'
 import { CommitStatus } from '../utils'
 
 suite("Testing Utils",()=>{
@@ -108,5 +108,77 @@ suite("Testing Utils",()=>{
         assert.notEqual(newCode, code)
         deleteDir(oneCommitDir!)
         assert.equal(callbackResult.val!.status, "Comitted")
+    })
+
+    test("Test if can create commit on file that is inside .gitginore, should not", async()=>{
+        const gitIgnoreContent = 
+`hehe.txt
+*.toIgnore
+toIgnore/*`
+        const noCommitWithGitIgoreDir: vscode.Uri| undefined = getOrCreateNoCommitDirWithGitIgnore(gitIgnoreContent)
+        assert.notEqual(noCommitWithGitIgoreDir, undefined)
+
+        //test saving hehe.txt
+        const heheFile =  vscode.Uri.file(path.join(noCommitWithGitIgoreDir!.fsPath, "hehe.txt"))
+        fs.appendFileSync(heheFile.fsPath,"Hehehe baby\r\n")
+		let callbackResult: CallBackCompleteStatus<CommitStatus> = {
+			complete: false,
+			val: undefined
+		}
+        const msg = "Shouldn't commit"
+        await utils.startGitCommit(msg,heheFile,(commitResult)=>{
+            callbackResult.complete = true
+            callbackResult.val = commitResult
+        })
+        assert.strictEqual(callbackResult.complete, true)
+        assert.strictEqual(callbackResult.val!.status, "GitIgnored" )
+
+        //testing saving for *.toIgnore file
+        const toIgnoreFile =  vscode.Uri.file(path.join(noCommitWithGitIgoreDir!.fsPath, "hehe.toIgnore"))
+        fs.appendFileSync(toIgnoreFile.fsPath,"Ignore This Baby\r\n")
+		const callbackResultIgnore: CallBackCompleteStatus<CommitStatus> = {
+			complete: false,
+			val: undefined
+		}
+        await utils.startGitCommit(msg,toIgnoreFile,(commitResult)=>{
+            callbackResultIgnore.complete = true
+            callbackResultIgnore.val = commitResult
+        })
+        assert.strictEqual(callbackResultIgnore.complete, true)
+        assert.strictEqual(callbackResultIgnore.val!.status, "GitIgnored" )
+
+
+        //testing saving for *.toIgnore file
+        const toIgnoreFile2 =  vscode.Uri.file(path.join(noCommitWithGitIgoreDir!.fsPath, "toIgnore/", "hehe.yolo"))
+        fs.mkdirSync(utils.getParentDir(toIgnoreFile2).fsPath)
+        fs.appendFileSync(toIgnoreFile2.fsPath,"Ignore This Baby Too\r\n")
+		const callbackResultIgnore2: CallBackCompleteStatus<CommitStatus> = {
+			complete: false,
+			val: undefined
+		}
+        await utils.startGitCommit(msg,toIgnoreFile2,(commitResult)=>{
+            callbackResultIgnore2.complete = true
+            callbackResultIgnore2.val = commitResult
+        })
+        assert.strictEqual(callbackResultIgnore2.complete, true)
+        assert.strictEqual(callbackResultIgnore2.val!.status, "GitIgnored" )
+
+
+        //testing saving a file that isn't in gitignore, should pass
+        const notIgnore =  vscode.Uri.file(path.join(noCommitWithGitIgoreDir!.fsPath, "notIgnore/", "not.yolo"))
+        fs.mkdirSync(utils.getParentDir(notIgnore).fsPath)
+        fs.appendFileSync(notIgnore.fsPath,"Don't ignore this Baby\r\n")
+		const callbackResultIgnore3: CallBackCompleteStatus<CommitStatus> = {
+			complete: false,
+			val: undefined
+		}
+        await utils.startGitCommit(msg,notIgnore,(commitResult)=>{
+            callbackResultIgnore3.complete = true
+            callbackResultIgnore3.val = commitResult
+        })
+        assert.strictEqual(callbackResultIgnore3.complete, true)
+        assert.strictEqual(callbackResultIgnore3.val!.status, "Comitted" )
+
+        deleteDir(noCommitWithGitIgoreDir!)
     })
 })
