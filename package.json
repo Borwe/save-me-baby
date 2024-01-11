@@ -25,6 +25,10 @@
       {
         "command": "save-me-baby.toggle",
         "title": "Save Me Baby: Toggle"
+      },
+      {
+        "command": "save-me-baby.compress",
+        "title": "Save Me Baby: Compress/Rebase"
       }
     ]
   },

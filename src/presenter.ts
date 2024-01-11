@@ -81,6 +81,14 @@ export class Presenter {
 		});
 		context.subscriptions.push(disposable);
 
+		disposable = vscode.commands.registerCommand("save-me-baby.compress", async ()=>{
+			const result = await vscode.window.showInputBox({
+				prompt: "Enter the the commit message to use",
+				title: "Rebase/Compress message"
+			})
+		})
+		context.subscriptions.push(disposable);
+
 		this.loaded = true;
     }
 }

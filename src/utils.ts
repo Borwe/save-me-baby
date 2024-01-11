@@ -12,6 +12,11 @@ export type CommitStatus = {
     error: string | undefined
 }
 
+export type GitMergeOrRebase = {
+    success: boolean,
+    error: string
+}
+
 export function getParentDir(uri: vscode.Uri): vscode.Uri{
     return vscode.Uri.file(path.join(uri.fsPath, ".."))
 }
@@ -52,6 +57,31 @@ export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
     let lastLogMessagePos = result.indexOf(" ")
     let lastLogMessage = result.substring(lastLogMessagePos+1)
     return lastLogMessage;
+}
+
+export function dirGetAllLogMessages(dir: vscode.Uri): Array<string> {
+    let result: string[] = []
+    const cwd = process.cwd()
+    process.chdir(dir.fsPath)
+    try{
+        const exec = execSync("git log --oneline")
+        String(exec).split("\n").map((line)=>{
+            let startMsgPos = line.indexOf(" ")
+            const msg = line.substring(startMsgPos).trim()
+            if(msg.length>0){
+                result.push(msg)
+            }
+        })
+    }catch(err){}
+    process.chdir(cwd)
+    return result
+}
+
+export function doGitMergeAndRebase(msgToCommit: string, dir: vscode.Uri, func: (result: GitMergeOrRebase)=>void){
+    const logLists = dirGetAllLogMessages(dir)
+    for(const log of logLists ){
+        console.log("Log:", log)
+    }
 }
 
 

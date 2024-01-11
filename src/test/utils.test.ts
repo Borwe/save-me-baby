@@ -181,4 +181,71 @@ toIgnore/*`
 
         deleteDir(noCommitWithGitIgoreDir!)
     })
+
+    test("Compressing previous commits", async ()=>{
+        const noCommit = getOrCreateNoCommitDir()
+        assert.notStrictEqual(noCommit, undefined)
+
+        const heheFile = vscode.Uri.file(path.join(noCommit!.fsPath, "hehe_lol.txt"))
+
+        let commitCallback: CallBackCompleteStatus<CommitStatus> = {
+            complete: false,
+            val: undefined
+        }
+        const reset = (commitCB: CallBackCompleteStatus<CommitStatus>)=>{
+            commitCB.complete = false
+            commitCB.val = undefined
+            return commitCB
+        }
+
+        //do a commit
+        fs.writeFileSync(heheFile.fsPath, "1\n")
+        const funcToDo = (commitResult: CommitStatus)=>{
+            commitCallback.complete = true
+            commitCallback.val = commitResult
+        }
+        await utils.startGitCommit(undefined,heheFile,funcToDo)
+        assert.strictEqual(commitCallback.complete, true)
+        const msgLog = utils.dirGetLastLogMessage(noCommit!)
+        assert.notStrictEqual(msgLog, undefined)
+
+
+        //do another commit
+        fs.writeFileSync(heheFile.fsPath, "2\n")
+        commitCallback = reset(commitCallback)
+        await utils.startGitCommit(undefined,heheFile,funcToDo)
+        assert.strictEqual(commitCallback.complete, true)
+        assert.strictEqual(msgLog!,utils.dirGetLastLogMessage(noCommit!))
+
+        //do 3rd commit
+        fs.writeFileSync(heheFile.fsPath, "3\n")
+        commitCallback = reset(commitCallback)
+        await utils.startGitCommit(undefined,heheFile,funcToDo)
+        assert.strictEqual(commitCallback.complete, true)
+        assert.strictEqual(msgLog!,utils.dirGetLastLogMessage(noCommit!))
+
+        //do 4th commit
+        fs.writeFileSync(heheFile.fsPath, "4\n")
+        commitCallback = reset(commitCallback)
+        await utils.startGitCommit(undefined,heheFile,funcToDo)
+        assert.strictEqual(commitCallback.complete, true)
+        assert.strictEqual(msgLog!,utils.dirGetLastLogMessage(noCommit!))
+
+        const logMessages: Array<string> = utils.dirGetAllLogMessages(noCommit!)
+        assert.strictEqual(logMessages.length, 4)
+        //do the merge/rebase with message
+        const msgToCommit = "Bind here BABY"
+        let success = false;
+        let error: string | undefined = undefined;
+        await utils.doGitMergeAndRebase(msgToCommit, noCommit!, (result: utils.GitMergeOrRebase)=>{
+            success = result.success
+            error = result.error
+        })
+        assert.strictEqual(success, true)
+        const currentLogMessages: Array<string> = utils.dirGetAllLogMessages(noCommit!)
+        assert.strictEqual(currentLogMessages.length<logMessages.length, true)
+        assert.strictEqual(currentLogMessages.length, 2)
+        const currentTopLog = utils.dirGetLastLogMessage(noCommit!)
+        assert.strictEqual(currentTopLog, msgToCommit)
+    })
 })
