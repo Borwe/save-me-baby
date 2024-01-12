@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { dirGetLastLogMessage, dirIsGit, getParentDir, gitPush, startGitCommit } from './utils';
+import { dirGetLastLogMessage, dirIsGit, doGitMergeAndRebase, getParentDir, gitPush, startGitCommit } from './utils';
 
 export class Presenter {
     private _enabled: boolean = false
@@ -86,6 +86,31 @@ export class Presenter {
 				prompt: "Enter the the commit message to use",
 				title: "Rebase/Compress message"
 			})
+
+			if(result === undefined || result.length === 0 ){
+				vscode.window.showInformationMessage("SaveMeBaby: Sorry, no commit message provided for compression")
+				return;
+			}
+
+			//get workspace
+			const workspaces = vscode.workspace.workspaceFolders
+			if( workspaces!== undefined && workspaces.length>0){
+				const workspace = workspaces[0]
+				console.log("FOLDER ",workspace.uri.fsPath)
+				doGitMergeAndRebase(result, workspace.uri,(result)=>{
+					if(result.pushed===true){
+						vscode.window.showInformationMessage("SaveMeBaby: Push success")
+					}else if(result.commited===true && result.pushed===false){
+						vscode.window.showInformationMessage("SaveMeBaby: Commited, but counldn't push pls 'git push -f'")
+					}else if(result.error !== undefined){
+						vscode.window.showInformationMessage("SaveMeBaby: Error occured while compressing "+result.error)
+					}
+				})
+			}else if(workspaces!== undefined && workspaces?.length > 1){
+				vscode.window.showInformationMessage("SaveMeBaby: Please close all open folders, and stay with one for this to work")
+			}else{
+				vscode.window.showInformationMessage("SaveMeBaby: Please open a folder before running this.")
+			}
 		})
 		context.subscriptions.push(disposable);
 
