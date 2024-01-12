@@ -1,6 +1,6 @@
 {
   "name": "save-me-baby",
-  "publisher": "borwe",
+  "publisher": "BrianOrwe",
   "displayName": "Save Me Baby",
   "description": "Automatically creates commits and pushes to remote git repo on save, with a squash feature",
   "version": "0.0.1",
