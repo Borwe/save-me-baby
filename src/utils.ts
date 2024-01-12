@@ -12,9 +12,15 @@ export type CommitStatus = {
     error: string | undefined
 }
 
+export type LogInfo = {
+    code: string,
+    msg: string
+}
+
 export type GitMergeOrRebase = {
-    success: boolean,
-    error: string
+    commited: boolean,
+    pushed: boolean,
+    error: string | undefined
 }
 
 export function getParentDir(uri: vscode.Uri): vscode.Uri{
@@ -59,8 +65,8 @@ export function dirGetLastLogMessage(uri: vscode.Uri): string | undefined {
     return lastLogMessage;
 }
 
-export function dirGetAllLogMessages(dir: vscode.Uri): Array<string> {
-    let result: string[] = []
+export function dirGetAllLogMessages(dir: vscode.Uri): Array<LogInfo> {
+    let result: LogInfo[] = []
     const cwd = process.cwd()
     process.chdir(dir.fsPath)
     try{
@@ -69,7 +75,11 @@ export function dirGetAllLogMessages(dir: vscode.Uri): Array<string> {
             let startMsgPos = line.indexOf(" ")
             const msg = line.substring(startMsgPos).trim()
             if(msg.length>0){
-                result.push(msg)
+                const code = line.substring(0,startMsgPos)
+                result.push({
+                    code: code,
+                    msg: msg
+                })
             }
         })
     }catch(err){}
@@ -79,8 +89,50 @@ export function dirGetAllLogMessages(dir: vscode.Uri): Array<string> {
 
 export function doGitMergeAndRebase(msgToCommit: string, dir: vscode.Uri, func: (result: GitMergeOrRebase)=>void){
     const logLists = dirGetAllLogMessages(dir)
+    const prev = logLists[0]
+    let commitToResetAtIndex = 0;
     for(const log of logLists ){
-        console.log("Log:", log)
+        if(log.msg !== prev.msg){
+            break;
+        }
+        commitToResetAtIndex++
+    }
+
+    if(commitToResetAtIndex===logLists.length && logLists.length > 1){
+        commitToResetAtIndex -= 1 
+    }
+
+    console.log("LOGSINFOS:",logLists)
+    console.log("LOGSSELECTPOS:",commitToResetAtIndex)
+    const logInfoToUse = logLists[commitToResetAtIndex]
+    console.log("LOGINFOUSING:",logInfoToUse)
+    const cwd = process.cwd()
+    try{
+        process.chdir(dir.fsPath)
+        execSync("git reset --soft "+logInfoToUse.code)
+        execSync("git commit -m \""+msgToCommit+"\"")
+        execSync("git push -f")
+        func({
+            error: undefined,
+            commited: true,
+            pushed: true
+        })
+    }catch(err: any){
+        if(String(err).includes("git push")){
+            func({
+                error: String(err),
+                commited: true,
+                pushed: false
+            })
+        }else{
+            func({
+                    error: String(err),
+                    commited: false,
+                    pushed: false
+            })
+        }
+    }finally{
+        process.chdir(cwd)
     }
 }
 

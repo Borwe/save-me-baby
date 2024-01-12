@@ -231,18 +231,17 @@ toIgnore/*`
         assert.strictEqual(commitCallback.complete, true)
         assert.strictEqual(msgLog!,utils.dirGetLastLogMessage(noCommit!))
 
-        const logMessages: Array<string> = utils.dirGetAllLogMessages(noCommit!)
+        const logMessages: Array<utils.LogInfo> = utils.dirGetAllLogMessages(noCommit!)
         assert.strictEqual(logMessages.length, 4)
         //do the merge/rebase with message
         const msgToCommit = "Bind here BABY"
-        let success = false;
-        let error: string | undefined = undefined;
-        await utils.doGitMergeAndRebase(msgToCommit, noCommit!, (result: utils.GitMergeOrRebase)=>{
-            success = result.success
-            error = result.error
+        let result: utils.GitMergeOrRebase | undefined = undefined;
+        await utils.doGitMergeAndRebase(msgToCommit, noCommit!, (inResult: utils.GitMergeOrRebase)=>{
+            result = inResult
         })
-        assert.strictEqual(success, true)
-        const currentLogMessages: Array<string> = utils.dirGetAllLogMessages(noCommit!)
+        assert.notStrictEqual(result, undefined)
+        assert.strictEqual(result!.commited, true) //don't check for push, it's only possible on a real repo with a remote
+        const currentLogMessages: Array<utils.LogInfo> = utils.dirGetAllLogMessages(noCommit!)
         assert.strictEqual(currentLogMessages.length<logMessages.length, true)
         assert.strictEqual(currentLogMessages.length, 2)
         const currentTopLog = utils.dirGetLastLogMessage(noCommit!)
