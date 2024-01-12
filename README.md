@@ -11,6 +11,11 @@ This a plugin that would auto generate a commit based on previous commit, and se
 - VsCode, or it's forks.
 - Git in your path
 
+## How it works
+- User can activate saving mode.
+- Everytime user saves, a commit is created and pushed with same msg as previous commit
+- User can also compress matching commits
+
 <!-- ## Extension Settings
 
 Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
