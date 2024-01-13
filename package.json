@@ -4,6 +4,8 @@
   "displayName": "Save Me Baby",
   "description": "Automatically creates commits and pushes to remote git repo on save, with a squash feature",
   "version": "0.0.1",
+  "repository": "https://github.com/Borwe/save-me-baby",
+  "icon": "./img/logo-small.png",
   "engines": {
     "vscode": "^1.85.0"
   },

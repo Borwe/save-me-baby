@@ -23,7 +23,6 @@ async function writeToFile(content: string, file: vscode.Uri){
 suite('Test commands', () => {
 
 	test("turning start_saving on and try saving on a none-git repo, it should not start commit", async ()=>{
-		await vscode.extensions.getExtension("borwe.save-me-baby")!.activate()
 		const test_dir = createTestDir("test_dir")
 		let result = await vscode.commands.executeCommand('save-me-baby.start-saving')
 		assert.strictEqual(result, true)
@@ -53,7 +52,6 @@ suite('Test commands', () => {
 
 
 	test("turning start_saving on and try saving on a repo, it finish commit", async ()=>{
-		await vscode.extensions.getExtension("borwe.save-me-baby")!.activate()
 		const result = await vscode.commands.executeCommand('save-me-baby.start-saving')
 		assert.strictEqual(result, true)
 

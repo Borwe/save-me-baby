@@ -98,14 +98,9 @@ export function doGitMergeAndRebase(msgToCommit: string, dir: vscode.Uri, func: 
         commitToResetAtIndex++
     }
 
-    if(commitToResetAtIndex===logLists.length && logLists.length > 1){
-        commitToResetAtIndex -= 1 
-    }
+    commitToResetAtIndex -= 1 
 
-    console.log("LOGSINFOS:",logLists)
-    console.log("LOGSSELECTPOS:",commitToResetAtIndex)
     const logInfoToUse = logLists[commitToResetAtIndex]
-    console.log("LOGINFOUSING:",logInfoToUse)
     const cwd = process.cwd()
     try{
         process.chdir(dir.fsPath)
@@ -210,7 +205,6 @@ export async function startGitCommit(logMsg: string | undefined, file: vscode.Ur
     }catch(err: any){
         const errString = String(err.stderr)
         if(errString.includes("paths are ignored")){
-            console.log("FUCK YEAH!!!!!!!!!!!", file.fsPath)
             commitStatus.status = "GitIgnored"
         }else{
             commitStatus.status = "Error"

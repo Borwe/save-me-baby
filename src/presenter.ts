@@ -27,7 +27,6 @@ export class Presenter {
 	gitCommit(logMsg: string | undefined, file: vscode.Uri){
 		//start the git push and commit process here
 		if(this._enabled){
-			console.log("PLEASE STARTING SAVE:", file.fsPath)
 			startGitCommit(logMsg, file, (commitStatus)=>{
 				if(commitStatus.status === "Comitted"){
 					//start git push
@@ -45,15 +44,17 @@ export class Presenter {
 		let disposable = vscode.commands.registerCommand('save-me-baby.start-saving', () => {
 			this._enabled=true;
 			this.disposableForOnSaveListener = vscode.workspace.onDidSaveTextDocument((doc)=>{
-				//get the parent dir of the file
-				const parent_dir = getParentDir(doc.uri)
-				if(dirIsGit(parent_dir)){
-					//if so then go and get last git log
-					let lastLog = dirGetLastLogMessage(parent_dir)
-					//create git commit
-					this.gitCommit(lastLog, doc.uri)
+				if(this._enabled){
+					//get the parent dir of the file
+					const parent_dir = getParentDir(doc.uri)
+					if(dirIsGit(parent_dir)){
+						//if so then go and get last git log
+						let lastLog = dirGetLastLogMessage(parent_dir)
+						//create git commit
+						this.gitCommit(lastLog, doc.uri)
+					}
+					//Letter have a setting to allow initializing repo incase no git
 				}
-				//Letter have a setting to allow initializing repo incase no git
 			})
 			vscode.window.showInformationMessage('Starting to Save You 😄!');
 			return true;
@@ -96,7 +97,6 @@ export class Presenter {
 			const workspaces = vscode.workspace.workspaceFolders
 			if( workspaces!== undefined && workspaces.length>0){
 				const workspace = workspaces[0]
-				console.log("FOLDER ",workspace.uri.fsPath)
 				doGitMergeAndRebase(result, workspace.uri,(result)=>{
 					if(result.pushed===true){
 						vscode.window.showInformationMessage("SaveMeBaby: Push success")

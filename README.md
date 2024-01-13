@@ -12,61 +12,26 @@ This a plugin that would auto generate a commit based on previous commit, and se
 - Git in your path
 
 ## How it works
-- User can activate saving mode.
+- User can activate saving mode, by using the command "save-me-baby.start-saving" or command pallete:
+![save_me_mode](https://github.com/Borwe/save-me-baby/blob/main/img/start_saving.png)
+- User can also toggle on, or off, by using the command "save-me-baby.toggle" or command pallete:
+![toggle_save_me_mode](https://github.com/Borwe/save-me-baby/blob/main/img/toggle_saving.png)
+- User can also stop saving all together with the command "save-me-baby.stop-saving" or command pallete:
+![stop_save_me_mode](https://github.com/Borwe/save-me-baby/blob/main/img/stop_saving.png)
 - Everytime user saves, a commit is created and pushed with same msg as previous commit
-- User can also compress matching commits
+- User can also compress matching commits using the command "save-me-baby.compress" or command pallete:
+![compress_save_me_mode](https://github.com/Borwe/save-me-baby/blob/main/img/compress_saving.png)
 
-<!-- ## Extension Settings
+# Building from source
+```sh
+npm install && npm run package
+```
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+# Testing
+```sh
+npm install && npm run test
+```
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
--->
+# Contributing
+- Before submitting a pullrequest please make sure tests pass. If stack post an issue.
+- Issues are open.

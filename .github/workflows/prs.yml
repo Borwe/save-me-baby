@@ -1,0 +1,33 @@
+name: Push Build
+
+on: 
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+    
+      - name: Setup Npm
+        run: | 
+            npm install && npm install -g typescript
+
+      - name: Setup Git
+        run: | 
+            git config --global user.email "brian.orwe@gmail.com"
+            git config --global user.name "brian.orwe"
+    
+      - name: Test
+        run: |
+            npm run test
