@@ -1,7 +1,6 @@
 ![save_me_logo](https://github.com/Borwe/save-me-baby/blob/main/img/logo-no-background.png)
 
-## Still under construction
-
+## What it does
 This a plugin that would auto generate a commit based on previous commit, and send a push on save if the file is part of a git repo
 
 
