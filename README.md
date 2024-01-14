@@ -3,8 +3,6 @@
 ## What it does
 This a plugin that would auto generate a commit based on previous commit, and send a push on save if the file is part of a git repo
 
-
-
 ## Requirements
 
 - VsCode, or it's forks.
