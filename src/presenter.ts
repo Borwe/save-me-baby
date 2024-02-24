@@ -11,7 +11,7 @@ import { execSync } from "node:child_process";
 
 interface PresenterInput {
   customCommitMessage: string | undefined;
-  customTicketRegex: string | undefined;
+  ticketRegex: string;
 }
 
 export class Presenter {
@@ -21,14 +21,14 @@ export class Presenter {
 
   private static instance: Presenter | null = null;
   private customCommitMessage: string | undefined;
-  private customTicketRegex: string | undefined;
+  private ticketRegex: string;
 
   // Hold onSalve listener object
   onSaveListener = false;
 
   constructor(input: PresenterInput) {
     this.customCommitMessage = input.customCommitMessage;
-    this.customTicketRegex = input.customTicketRegex;
+    this.ticketRegex = input.ticketRegex;
   }
 
   static getInstance(input: PresenterInput): Presenter {
@@ -56,7 +56,7 @@ export class Presenter {
         } else if (commitStatus.status === "Error") {
           //show popup of error
           vscode.window.showErrorMessage(
-            "🤯 Error in commiting: " + commitStatus.error,
+            "🤯 Error in commiting: " + commitStatus.error
           );
         }
       });
@@ -72,24 +72,32 @@ export class Presenter {
           vscode.workspace.onDidSaveTextDocument((doc) => {
             if (this._enabled) {
               //get the parent dir of the file
-              const parent_dir = getParentDir(doc.uri);
-              if (dirIsGit(parent_dir)) {
+              const parentDir = getParentDir(doc.uri);
+              if (dirIsGit(parentDir)) {
                 //if so then go and get last git log
-                let commitMessage = dirGetLastLogMessage(parent_dir);
+                let commitMessage = dirGetLastLogMessage(parentDir);
                 if (this.customCommitMessage !== undefined) {
                   commitMessage = this.customCommitMessage;
                 }
 
-                if (this.customTicketRegex !== undefined) {
+                if (this.ticketRegex !== undefined) {
                   // get the branch that the user has checked out
-                  const branches = execSync("git branch -v").toString();
+                  const branches = execSync("git branch -v", {
+                    cwd: parentDir.fsPath,
+                  }).toString();
+                  const currentBranchLineMatches = branches.match(/\* (.*)/);
 
-                  const branchMatch = branches.match(/\* (.*)/);
-                  if (branchMatch && branchMatch[1]) {
-                    commitMessage = this.customCommitMessage?.replace(
-                      "{{ticket}}",
-                      branchMatch[1],
-                    );
+                  // [WIP] {{ticket}} I Am doing the needful"
+                  if (currentBranchLineMatches && currentBranchLineMatches[1]) {
+                    const ticketNumberMatches =
+                      currentBranchLineMatches[1].match(this.ticketRegex);
+
+                    if (ticketNumberMatches && ticketNumberMatches[1]) {
+                      commitMessage = this.customCommitMessage?.replace(
+                        "{{ticket}}",
+                        ticketNumberMatches[1]
+                      );
+                    }
                   }
                 }
 
@@ -101,7 +109,7 @@ export class Presenter {
           });
         vscode.window.showInformationMessage("Starting to Save You 😄!");
         return true;
-      },
+      }
     );
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand(
@@ -112,7 +120,7 @@ export class Presenter {
         this._enabled = false;
         vscode.window.showInformationMessage("Stoping to Save Save you 😥!");
         return true;
-      },
+      }
     );
     context.subscriptions.push(disposable);
 
@@ -139,7 +147,7 @@ export class Presenter {
 
         if (result === undefined || result.length === 0) {
           vscode.window.showInformationMessage(
-            "SaveMeBaby: Sorry, no commit message provided for compression",
+            "SaveMeBaby: Sorry, no commit message provided for compression"
           );
           return;
         }
@@ -153,24 +161,24 @@ export class Presenter {
               vscode.window.showInformationMessage("SaveMeBaby: Push success");
             } else if (result.commited === true && result.pushed === false) {
               vscode.window.showInformationMessage(
-                "SaveMeBaby: Commited, but counldn't push pls 'git push -f'",
+                "SaveMeBaby: Commited, but counldn't push pls 'git push -f'"
               );
             } else if (result.error !== undefined) {
               vscode.window.showInformationMessage(
-                "SaveMeBaby: Error occured while compressing " + result.error,
+                "SaveMeBaby: Error occured while compressing " + result.error
               );
             }
           });
         } else if (workspaces !== undefined && workspaces?.length > 1) {
           vscode.window.showInformationMessage(
-            "SaveMeBaby: Please close all open folders, and stay with one for this to work",
+            "SaveMeBaby: Please close all open folders, and stay with one for this to work"
           );
         } else {
           vscode.window.showInformationMessage(
-            "SaveMeBaby: Please open a folder before running this.",
+            "SaveMeBaby: Please open a folder before running this."
           );
         }
-      },
+      }
     );
     context.subscriptions.push(disposable);
 

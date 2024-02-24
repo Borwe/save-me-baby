@@ -9,13 +9,14 @@ export function activate(context: vscode.ExtensionContext) {
   const customCommitMessage: string | undefined = vscode.workspace
     .getConfiguration("saveMeBaby")
     .get("commitMessage");
-  const customTicketRegex: string | undefined = vscode.workspace
+
+  const ticketRegex = vscode.workspace
     .getConfiguration("saveMeBaby")
-    .get("ticketMessage");
+    .get("ticketRegex") as string;
 
   Presenter.getInstance({
     customCommitMessage,
-    customTicketRegex,
+    ticketRegex
   }).setupCommands(context);
   console.log('Congratulations, your extension "save-me-baby" is now active!');
 }
