@@ -20,7 +20,7 @@
       "properties": {
         "saveMeBaby.commitMessage": {
           "type": "string",
-          "default": "WIP",
+          "examples": ["[WIP] {{ticket}} feature work", "WIP"],
           "description": "The default commit message for Save Me Baby."
         },
         "saveMeBaby.useTicketRegex": {
