@@ -1,13 +1,12 @@
 name: Push Build
 
-on: 
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
-
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -17,17 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-            fetch-depth: 0
-    
+          fetch-depth: 0
+
       - name: Setup Npm
-        run: | 
-            npm install && npm install -g typescript
+        run: |
+          npm install && npm install -g typescript
 
       - name: Setup Git
-        run: | 
-            git config --global user.email "brian.orwe@gmail.com"
-            git config --global user.name "brian.orwe"
-    
+        run: |
+          git config --global user.email "brian.orwe@gmail.com"
+          git config --global user.name "brian.orwe"
+
       - name: Test
         run: |
-            npm run test
+          npm run test
