@@ -14,18 +14,20 @@ interface PresenterInput {
   ticketRegex: string;
   useTicketRegex: boolean;
   pushOnSave: boolean;
+  statusBarItem: vscode.StatusBarItem;
 }
 
 export class Presenter {
   private _enabled: boolean = false;
+  private loaded: boolean = false;
   private disposableForOnSaveListener: vscode.Disposable | null = null;
-  private loaded = false;
 
   private static instance: Presenter | null = null;
   private customCommitMessage: string | undefined;
   private ticketRegex: string;
   private useTicketRegex: boolean;
   private pushOnSave: boolean;
+  private statusBarItem: vscode.StatusBarItem;
 
   // Hold onSalve listener object
   onSaveListener = false;
@@ -35,11 +37,12 @@ export class Presenter {
     this.ticketRegex = input.ticketRegex;
     this.useTicketRegex = input.useTicketRegex;
     this.pushOnSave = input.pushOnSave;
+    this.statusBarItem = config.statusBarItem;
   }
 
-  static getInstance(input: PresenterInput): Presenter {
+  static getInstance(config: PresenterConfig): Presenter {
     if (!Presenter.instance) {
-      Presenter.instance = new Presenter(input);
+      Presenter.instance = new Presenter(config);
     }
     return Presenter.instance;
   }
@@ -50,6 +53,12 @@ export class Presenter {
   /** Toggle to enable or disable saving */
   toggle() {
     this._enabled = !this._enabled;
+
+    if (this._enabled) {
+      this.statusBarItem.text = "$(save) Saving";
+    } else {
+      this.statusBarItem.text = "$(save) Not Saving";
+    }
   }
 
   gitCommit(logMsg: string | undefined, file: vscode.Uri) {
@@ -136,14 +145,15 @@ export class Presenter {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand("save-me-baby.toggle", () => {
-      this.toggle();
       if (this.enabled) {
         this.disposableForOnSaveListener?.dispose();
         this.disposableForOnSaveListener = null;
-        vscode.window.showInformationMessage("Stoping to Save Save you 😥!");
+        vscode.window.showInformationMessage("Stopping to Save Save you 😥!");
       } else {
         vscode.window.showInformationMessage("Starting to Save You 😄!");
       }
+
+      this.toggle();
       return true;
     });
     context.subscriptions.push(disposable);
