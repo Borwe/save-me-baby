@@ -25,7 +25,7 @@
         },
         "saveMeBaby.ticketRegex": {
           "type": "string",
-          "default": "^(?:[A-Z]+-[0-9]+)",
+          "default": "\/([A-Za-z]+-\\d+)",
           "description": "The regex to match ticket numbers in the branch name."
         }
       }
