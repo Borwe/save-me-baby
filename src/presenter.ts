@@ -12,6 +12,7 @@ import { execSync } from "node:child_process";
 interface PresenterInput {
   customCommitMessage: string | undefined;
   ticketRegex: string;
+  useTicketRegex: boolean
 }
 
 export class Presenter {
@@ -22,6 +23,7 @@ export class Presenter {
   private static instance: Presenter | null = null;
   private customCommitMessage: string | undefined;
   private ticketRegex: string;
+  private useTicketRegex: boolean;
 
   // Hold onSalve listener object
   onSaveListener = false;
@@ -29,6 +31,7 @@ export class Presenter {
   constructor(input: PresenterInput) {
     this.customCommitMessage = input.customCommitMessage;
     this.ticketRegex = input.ticketRegex;
+    this.useTicketRegex = input.useTicketRegex;
   }
 
   static getInstance(input: PresenterInput): Presenter {
@@ -76,11 +79,14 @@ export class Presenter {
               if (dirIsGit(parentDir)) {
                 //if so then go and get last git log
                 let commitMessage = dirGetLastLogMessage(parentDir);
+
+                // if the user has a custom commit message
                 if (this.customCommitMessage !== undefined) {
                   commitMessage = this.customCommitMessage;
                 }
-
-                if (this.ticketRegex !== undefined) {
+                
+                // if the user has a ticket regex
+                if (this.useTicketRegex && this.ticketRegex !== undefined) {
                   // get the branch that the user has checked out
                   const branches = execSync("git branch -v", {
                     cwd: parentDir.fsPath,

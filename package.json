@@ -23,6 +23,11 @@
           "default": "WIP",
           "description": "The default commit message for Save Me Baby."
         },
+        "saveMeBaby.useTicketRegex": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to use a custom ticket regex to match ticket numbers in the branch name or anything else you need"
+        },
         "saveMeBaby.ticketRegex": {
           "type": "string",
           "default": "\/([A-Za-z]+-\\d+)",
