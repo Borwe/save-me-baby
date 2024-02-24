@@ -6,7 +6,17 @@ import { Presenter } from "./presenter";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  Presenter.getInstance().setupCommands(context);
+  const customCommitMessage: string | undefined = vscode.workspace
+    .getConfiguration("saveMeBaby")
+    .get("commitMessage");
+  const customTicketRegex: string | undefined = vscode.workspace
+    .getConfiguration("saveMeBaby")
+    .get("ticketMessage");
+
+  Presenter.getInstance({
+    customCommitMessage,
+    customTicketRegex,
+  }).setupCommands(context);
   console.log('Congratulations, your extension "save-me-baby" is now active!');
 }
 

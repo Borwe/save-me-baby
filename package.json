@@ -15,6 +15,21 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Your Extension Configuration",
+      "properties": {
+        "saveMeBaby.commitMessage": {
+          "type": "string",
+          "default": "WIP",
+          "description": "The default commit message for Save Me Baby."
+        },
+        "saveMeBaby.ticketRegex": {
+          "type": "string",
+          "default": "^(?:[A-Z]+-[0-9]+)",
+          "description": "The regex to match ticket numbers in the branch name."
+        }
+      }
+    },
     "commands": [
       {
         "command": "save-me-baby.start-saving",
@@ -37,9 +52,8 @@
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "webpack",
-    "watch": "webpack --watch",
+    "dev": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
-    "format": "prettier --write 'src/**/*.ts'",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -56,7 +70,6 @@
     "@vscode/test-electron": "^2.3.8",
     "dotenv": "^16.3.1",
     "eslint": "^8.56.0",
-    "prettier": "^3.2.5",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",

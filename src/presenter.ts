@@ -7,6 +7,12 @@ import {
   gitPush,
   startGitCommit,
 } from "./utils";
+import { execSync } from "node:child_process";
+
+interface PresenterInput {
+  customCommitMessage: string | undefined;
+  customTicketRegex: string | undefined;
+}
 
 export class Presenter {
   private _enabled: boolean = false;
@@ -14,13 +20,20 @@ export class Presenter {
   private loaded = false;
 
   private static instance: Presenter | null = null;
+  private customCommitMessage: string | undefined;
+  private customTicketRegex: string | undefined;
 
   // Hold onSalve listener object
   onSaveListener = false;
 
-  static getInstance(): Presenter {
+  constructor(input: PresenterInput) {
+    this.customCommitMessage = input.customCommitMessage;
+    this.customTicketRegex = input.customTicketRegex;
+  }
+
+  static getInstance(input: PresenterInput): Presenter {
     if (!Presenter.instance) {
-      Presenter.instance = new Presenter();
+      Presenter.instance = new Presenter(input);
     }
     return Presenter.instance;
   }
@@ -62,9 +75,26 @@ export class Presenter {
               const parent_dir = getParentDir(doc.uri);
               if (dirIsGit(parent_dir)) {
                 //if so then go and get last git log
-                let lastLog = dirGetLastLogMessage(parent_dir);
+                let commitMessage = dirGetLastLogMessage(parent_dir);
+                if (this.customCommitMessage !== undefined) {
+                  commitMessage = this.customCommitMessage;
+                }
+
+                if (this.customTicketRegex !== undefined) {
+                  // get the branch that the user has checked out
+                  const branches = execSync("git branch -v").toString();
+
+                  const branchMatch = branches.match(/\* (.*)/);
+                  if (branchMatch && branchMatch[1]) {
+                    commitMessage = this.customCommitMessage?.replace(
+                      "{{ticket}}",
+                      branchMatch[1],
+                    );
+                  }
+                }
+
                 //create git commit
-                this.gitCommit(lastLog, doc.uri);
+                this.gitCommit(commitMessage, doc.uri);
               }
               //Letter have a setting to allow initializing repo incase no git
             }
