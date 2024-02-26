@@ -29,6 +29,9 @@ npm install && npm run package
 npm install && npm run test
 ```
 
+# Creating a vsix
+Run run `npm run vsce` to create an `.vsix` that you can use for testing.
+
 # Contributing
-- Before submitting a pullrequest please make sure tests pass. If stack post an issue.
+- Before submitting a pull request please make sure tests pass. If stack post an issue.
 - Issues are open.
