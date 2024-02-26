@@ -35,6 +35,11 @@
           "type": "string",
           "default": "/([A-Za-z]+-\\d+)",
           "description": "The regex to match ticket numbers in the branch name."
+        },
+        "saveMeBaby.pushOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to push to the remote repo on save."
         }
       }
     },

@@ -12,7 +12,8 @@ import { execSync } from "node:child_process";
 interface PresenterInput {
   customCommitMessage: string | undefined;
   ticketRegex: string;
-  useTicketRegex: boolean
+  useTicketRegex: boolean;
+  pushOnSave: boolean;
 }
 
 export class Presenter {
@@ -24,6 +25,7 @@ export class Presenter {
   private customCommitMessage: string | undefined;
   private ticketRegex: string;
   private useTicketRegex: boolean;
+  private pushOnSave: boolean;
 
   // Hold onSalve listener object
   onSaveListener = false;
@@ -32,6 +34,7 @@ export class Presenter {
     this.customCommitMessage = input.customCommitMessage;
     this.ticketRegex = input.ticketRegex;
     this.useTicketRegex = input.useTicketRegex;
+    this.pushOnSave = input.pushOnSave;
   }
 
   static getInstance(input: PresenterInput): Presenter {
@@ -55,7 +58,9 @@ export class Presenter {
       startGitCommit(logMsg, file, (commitStatus) => {
         if (commitStatus.status === "Comitted") {
           //start git push
-          gitPush(getParentDir(file));
+          if (this.pushOnSave) {
+            gitPush(getParentDir(file));
+          }
         } else if (commitStatus.status === "Error") {
           //show popup of error
           vscode.window.showErrorMessage(
