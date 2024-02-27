@@ -32,6 +32,19 @@ npm install && npm run test
 # Creating a vsix
 Run run `npm run vsce` to create an `.vsix` that you can use for testing.
 
+# Extra configurations
+You can also add in your user settings variables like the following:
+
+```json
+{
+  "saveMeBaby.commitMessage": "[WIP] {{ticket}} feature work",
+  "saveMeBaby.useTicketRegex": true,
+  "saveMeBaby.pushOnSave": false
+}
+```
+
+If the `useTicketRegex` is `false` (default), we just use the given `commitMessage` as is. If it's specified to be `true`, we parse the Jira ticket off the current branch with a regex and replace it wherever the user the text `{{ticket}}` is in the `commitMessage`. You can also pass in a custom regex with `ticketRegex` to parse what you want off the current branch, but we have a default one set up in our `package.json`. If you don't opt in at all, the commit message will use the previous commit in the git log. Finally, we can allow the user to allow auto push or not. By default it's on.
+
 # Contributing
 - Before submitting a pull request please make sure tests pass. If stack post an issue.
 - Issues are open.
