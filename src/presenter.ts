@@ -163,6 +163,7 @@ export class Presenter {
         vscode.window.showInformationMessage("Stopping to Save You 😥!");
       } else {
         vscode.window.showInformationMessage("Starting to Save You 😄!");
+        this.enableOnSaveListener();
       }
 
       return true;
