@@ -3,7 +3,7 @@
   "publisher": "BrianOrwe",
   "displayName": "Save Me Baby",
   "description": "Automatically creates commits and pushes to remote git repo on save, with a squash feature",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": "https://github.com/Borwe/save-me-baby",
   "icon": "img/logo-small.png",
   "engines": {
