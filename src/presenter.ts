@@ -14,18 +14,20 @@ interface PresenterInput {
   ticketRegex: string;
   useTicketRegex: boolean;
   pushOnSave: boolean;
+  statusBarItem: vscode.StatusBarItem;
 }
 
 export class Presenter {
   private _enabled: boolean = false;
+  private loaded: boolean = false;
   private disposableForOnSaveListener: vscode.Disposable | null = null;
-  private loaded = false;
 
   private static instance: Presenter | null = null;
   private customCommitMessage: string | undefined;
   private ticketRegex: string;
   private useTicketRegex: boolean;
   private pushOnSave: boolean;
+  private statusBarItem: vscode.StatusBarItem;
 
   // Hold onSalve listener object
   onSaveListener = false;
@@ -35,11 +37,12 @@ export class Presenter {
     this.ticketRegex = input.ticketRegex;
     this.useTicketRegex = input.useTicketRegex;
     this.pushOnSave = input.pushOnSave;
+    this.statusBarItem = input.statusBarItem;
   }
 
-  static getInstance(input: PresenterInput): Presenter {
+  static getInstance(config: PresenterInput): Presenter {
     if (!Presenter.instance) {
-      Presenter.instance = new Presenter(input);
+      Presenter.instance = new Presenter(config);
     }
     return Presenter.instance;
   }
@@ -50,6 +53,12 @@ export class Presenter {
   /** Toggle to enable or disable saving */
   toggle() {
     this._enabled = !this._enabled;
+
+    if (this._enabled) {
+      this.statusBarItem.text = "$(save) Saving";
+    } else {
+      this.statusBarItem.text = "$(save) Not Saving";
+    }
   }
 
   gitCommit(logMsg: string | undefined, file: vscode.Uri) {
@@ -71,57 +80,67 @@ export class Presenter {
     }
   }
 
+  enableOnSaveListener() {
+    // TODO: can we optimize this better so it only goes on load of the extension
+    this.disposableForOnSaveListener = vscode.workspace.onDidSaveTextDocument(
+      (doc) => {
+        if (!this._enabled) {
+          return;
+        }
+
+        const parentDir = getParentDir(doc.uri);
+        if (dirIsGit(parentDir)) {
+          //if so then go and get last git log
+          let commitMessage = dirGetLastLogMessage(parentDir);
+
+          // if the user has a custom commit message
+          if (this.customCommitMessage !== undefined) {
+            commitMessage = this.customCommitMessage;
+          }
+
+          // if the user has a ticket regex
+          if (this.useTicketRegex && this.ticketRegex !== undefined) {
+            // get the branch that the user has checked out
+            const branches = execSync("git branch -v", {
+              cwd: parentDir.fsPath,
+            }).toString();
+            const currentBranchLineMatches = branches.match(/\* (.*)/);
+
+            // [WIP] {{ticket}} I Am doing the needful"
+            if (currentBranchLineMatches && currentBranchLineMatches[1]) {
+              const ticketNumberMatches = currentBranchLineMatches[1].match(
+                this.ticketRegex
+              );
+
+              if (ticketNumberMatches && ticketNumberMatches[1]) {
+                commitMessage = this.customCommitMessage?.replace(
+                  "{{ticket}}",
+                  ticketNumberMatches[1]
+                );
+              }
+            }
+          }
+
+          //create git commit
+          this.gitCommit(commitMessage, doc.uri);
+        }
+        //Letter have a setting to allow initializing repo incase no git
+      }
+    );
+  }
+
   setupCommands(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand(
       "save-me-baby.start-saving",
       () => {
         this._enabled = true;
-        this.disposableForOnSaveListener =
-          vscode.workspace.onDidSaveTextDocument((doc) => {
-            if (this._enabled) {
-              //get the parent dir of the file
-              const parentDir = getParentDir(doc.uri);
-              if (dirIsGit(parentDir)) {
-                //if so then go and get last git log
-                let commitMessage = dirGetLastLogMessage(parentDir);
+        this.enableOnSaveListener();
 
-                // if the user has a custom commit message
-                if (this.customCommitMessage !== undefined) {
-                  commitMessage = this.customCommitMessage;
-                }
-                
-                // if the user has a ticket regex
-                if (this.useTicketRegex && this.ticketRegex !== undefined) {
-                  // get the branch that the user has checked out
-                  const branches = execSync("git branch -v", {
-                    cwd: parentDir.fsPath,
-                  }).toString();
-                  const currentBranchLineMatches = branches.match(/\* (.*)/);
-
-                  // [WIP] {{ticket}} I Am doing the needful"
-                  if (currentBranchLineMatches && currentBranchLineMatches[1]) {
-                    const ticketNumberMatches =
-                      currentBranchLineMatches[1].match(this.ticketRegex);
-
-                    if (ticketNumberMatches && ticketNumberMatches[1]) {
-                      commitMessage = this.customCommitMessage?.replace(
-                        "{{ticket}}",
-                        ticketNumberMatches[1]
-                      );
-                    }
-                  }
-                }
-
-                //create git commit
-                this.gitCommit(commitMessage, doc.uri);
-              }
-              //Letter have a setting to allow initializing repo incase no git
-            }
-          });
         vscode.window.showInformationMessage("Starting to Save You 😄!");
         return true;
       }
     );
+
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand(
       "save-me-baby.stop-saving",
@@ -129,7 +148,7 @@ export class Presenter {
         this.disposableForOnSaveListener?.dispose();
         this.disposableForOnSaveListener = null;
         this._enabled = false;
-        vscode.window.showInformationMessage("Stoping to Save Save you 😥!");
+        vscode.window.showInformationMessage("Stopping to Save You 😥!");
         return true;
       }
     );
@@ -137,13 +156,16 @@ export class Presenter {
 
     disposable = vscode.commands.registerCommand("save-me-baby.toggle", () => {
       this.toggle();
-      if (this.enabled) {
+
+      if (!this.enabled) {
         this.disposableForOnSaveListener?.dispose();
         this.disposableForOnSaveListener = null;
-        vscode.window.showInformationMessage("Stoping to Save Save you 😥!");
+        vscode.window.showInformationMessage("Stopping to Save You 😥!");
       } else {
         vscode.window.showInformationMessage("Starting to Save You 😄!");
+        this.enableOnSaveListener();
       }
+
       return true;
     });
     context.subscriptions.push(disposable);
